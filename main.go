@@ -2,16 +2,19 @@ package main
 
 import (
 	"context"
+	"fmt"
+	"forumproject/config"
 	"forumproject/db"
+	"forumproject/models"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/pauljamescleary/gomin/pkg/common/config"
 )
 
 func main() {
-	pool, err := db.NewPgConnectionPool(config.Config{DbUrl: "postgres://golang:securePass1@localhost:6500/forum"})
-	if err != nil {
-		panic(err)
-	}
+	dbConfig := config.DbConfig{DatabaseUrl: "postgres://golang:securePass1@localhost:6500/forum"}
+	database := db.NewDatabase(dbConfig)
+
+	pool := database.Pool
+
 	ctx := context.Background()
 
 	initDb(ctx, pool, "DROP TABLE IF EXISTS forum.app_users")
@@ -19,6 +22,24 @@ func main() {
 
 	stat := pool.Stat()
 	println("stat:", stat)
+
+	userRepo, _ := db.NewDbUserRepository(database)
+	user := models.NewAppUser("piotr", "qwertyuiop123!")
+	userRepo.CreateUser(user)
+	retrieved, _ := userRepo.GetUserByUsername("piotr")
+	fmt.Printf("%#v\n", retrieved)
+	println("retrieved:", retrieved)
+
+	retrieved.Username = "piotrek1"
+	retrieved.SetPassword("newpassword1")
+	userRepo.UpdateUser(retrieved)
+
+	updated, _ := userRepo.GetUserByUsername("piotrek1")
+	passcheck, _ := updated.CheckPassword("newpassword1")
+	if passcheck {
+		println("Password update test passed!")
+	}
+
 }
 
 func initDb(ctx context.Context, pool *pgxpool.Pool, sql string) {

@@ -7,6 +7,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	uuid2 "github.com/gofrs/uuid/v5"
 	"os"
 	"strings"
 
@@ -18,6 +19,13 @@ type AppUser struct {
 	Uuid     string
 	Username string
 	Password string
+}
+
+func NewAppUser(username string, password string) *AppUser {
+	uuid, _ := uuid2.NewV4()
+	user := &AppUser{Uuid: uuid.String(), Username: username}
+	user.SetPassword(password)
+	return user
 }
 
 func Base64Dec(encoded string) ([]byte, error) {
@@ -45,18 +53,18 @@ func (u *AppUser) SetPassword(password string) error {
 	}
 	passwordBytes := []byte(password)
 	passwordEncrypted := pbkdf2.Key(passwordBytes, salt, 4096, 32, sha256.New)
-	u.password = base64.StdEncoding.EncodeToString(salt) + ":" + base64.StdEncoding.EncodeToString(passwordEncrypted)
+	u.Password = base64.StdEncoding.EncodeToString(salt) + ":" + base64.StdEncoding.EncodeToString(passwordEncrypted)
 	return nil
 }
 
 func (u *AppUser) GetPassword() string {
-	return u.password
+	return u.Password
 }
 
 func (u *AppUser) CheckPassword(givenPassword string) (bool, error) {
 	log := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 
-	passString := strings.Split(u.password, ":")
+	passString := strings.Split(u.Password, ":")
 	// len
 	if len(passString) != 2 {
 		log.Info("Password is malformed for ", "username", u.Username)

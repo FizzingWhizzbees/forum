@@ -15,12 +15,27 @@ type PostgresUserRepository struct {
 	db *Database
 }
 
+func NewDbUserRepository(db *Database) (*PostgresUserRepository, error) {
+	return &PostgresUserRepository{db: db}, nil
+}
+
 func (repo PostgresUserRepository) CreateUser(user *models.AppUser) (*models.AppUser, error) {
 	sql := `
 	INSERT INTO forum.app_users (uuid, username, password)
 	VALUES ($1, $2, $3)
 	`
-	_, err := repo.db.Conn.Exec(context.Background(), sql, user.Uuid, user.Username, user.GetPassword())
+	_, err := repo.db.Pool.Exec(context.Background(), sql, user.Uuid, user.Username, user.GetPassword())
+	if err != nil {
+		panic(err)
+	}
+	return user, nil
+}
+
+func (repo PostgresUserRepository) UpdateUser(user *models.AppUser) (*models.AppUser, error) {
+	sql := `
+	UPDATE forum.app_users SET username = $1, password = $2 WHERE uuid = $3
+	`
+	_, err := repo.db.Pool.Exec(context.Background(), sql, user.Username, user.GetPassword(), user.Uuid)
 	if err != nil {
 		panic(err)
 	}
@@ -33,7 +48,7 @@ func (repo PostgresUserRepository) GetUserByUsername(username string) (*models.A
 	FROM forum.app_users
 	WHERE username = $1
 	`
-	row, err := repo.db.Conn.Query(context.Background(), sql, username)
+	rows, err := repo.db.Pool.Query(context.Background(), sql, username)
 	if err != nil {
 		return nil, err
 	}

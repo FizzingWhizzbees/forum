@@ -1,27 +1,28 @@
 package db
 
 import (
+	"forumproject/config"
+
 	"context"
 	"github.com/jackc/pgx/v5"
 
 	pgxuuid "github.com/jackc/pgx-gofrs-uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/pauljamescleary/gomin/pkg/common/config"
 	"github.com/rs/zerolog/log"
 )
 
 type Database struct {
-	Conn *pgxpool.Pool
+	Pool *pgxpool.Pool
 }
 
-func NewDatabase(c config.Config) *Database {
+func NewDatabase(c config.DbConfig) *Database {
 	pool, _ := NewPgConnectionPool(c)
-	return &Database{Conn: pool}
+	return &Database{Pool: pool}
 }
 
-func NewPgConnectionPool(c config.Config) (*pgxpool.Pool, error) {
+func NewPgConnectionPool(c config.DbConfig) (*pgxpool.Pool, error) {
 	// urlExample := "postgres://username:password@localhost:5432/database_name"
-	dbUrl := c.DbUrl
+	dbUrl := c.DatabaseUrl
 	dbConfig, err := pgxpool.ParseConfig(dbUrl)
 	if err != nil {
 		return nil, err

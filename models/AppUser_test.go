@@ -5,7 +5,7 @@ import (
 )
 
 func TestCheckPasswordCorrect(t *testing.T) {
-	user := AppUser{"pawel", "pZHTjHUjKXfmyHjQzxL10w==:g2yMB7ukc6aU30Rhe4lB1FlXxCfIqcHvnXOciAe/IpE="}
+	user := AppUser{"uid1234", "pawel", "pZHTjHUjKXfmyHjQzxL10w==:g2yMB7ukc6aU30Rhe4lB1FlXxCfIqcHvnXOciAe/IpE="}
 	pass := "somepassword"
 	res, err := user.CheckPassword(pass)
 	if err != nil {
@@ -17,7 +17,7 @@ func TestCheckPasswordCorrect(t *testing.T) {
 }
 
 func TestCheckPasswordIncorrect(t *testing.T) {
-	user := AppUser{"pawel", "pZHTjHUjKXfmyHjQzxL10w==:g2yMB7ukc6aU30Rhe4lB1FlXxCfIqcHvnXOciAe/IpE="}
+	user := AppUser{"uid1234", "pawel", "pZHTjHUjKXfmyHjQzxL10w==:g2yMB7ukc6aU30Rhe4lB1FlXxCfIqcHvnXOciAe/IpE="}
 	pass := "somepassword1"
 	res, err := user.CheckPassword(pass)
 	if err == nil {
@@ -29,7 +29,7 @@ func TestCheckPasswordIncorrect(t *testing.T) {
 }
 
 func TestSetPassword(t *testing.T) {
-	user := AppUser{"pawel", ""}
+	user := AppUser{"uid1234", "pawel", ""}
 	password := "someotherpassword"
 	err := user.SetPassword(password)
 	if err != nil {
